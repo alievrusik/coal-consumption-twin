@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Coal consumption twin — fleet inventory",
+  title: "Двойник потребления угля — запас парка котельных",
   description:
-    "Prototype fleet dashboard for daily coal draw versus reserves with linear shortage outlook.",
+    "Прототип панели парка: суточный расход угля и остатки с линейным прогнозом дефицита.",
 };
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ru">
       <body>{children}</body>
     </html>
   );

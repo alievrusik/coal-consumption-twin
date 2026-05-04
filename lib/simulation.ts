@@ -17,7 +17,7 @@ export type BoilerUnitSnapshot = {
 function defaultUnits(): { id: string; name: string; dailyConsumptionKg: number }[] {
   return Array.from({ length: BOILER_COUNT }, (_, i) => ({
     id: `BH-${String(i + 1).padStart(2, "0")}`,
-    name: `Boiler house ${i + 1}`,
+    name: `Котельная ${i + 1}`,
     dailyConsumptionKg: DEFAULT_DAILY_KG,
   }));
 }

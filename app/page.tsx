@@ -13,7 +13,7 @@ type UnitDraft = { id: string; name: string; dailyConsumptionKg: number };
 function buildDefaultUnits(): UnitDraft[] {
   return Array.from({ length: BOILER_COUNT }, (_, i) => ({
     id: `BH-${String(i + 1).padStart(2, "0")}`,
-    name: `Boiler house ${i + 1}`,
+    name: `Котельная ${i + 1}`,
     dailyConsumptionKg: DEFAULT_DAILY_KG,
   }));
 }
@@ -52,17 +52,17 @@ export default function DashboardPage() {
     if (useExcel) {
       try {
         const parsed = JSON.parse(excelDraft || SAMPLE_EXCEL_JSON) as unknown;
-        if (!Array.isArray(parsed)) throw new Error("Simulated workbook JSON must be an array.");
+        if (!Array.isArray(parsed)) throw new Error("JSON имитации таблицы должен быть массивом.");
         simulatedExcelRows = parsed.map((row) => {
           const r = row as { unitId?: unknown; dailyConsumptionKg?: unknown };
-          if (typeof r.unitId !== "string") throw new Error("Each row needs unitId (string).");
+          if (typeof r.unitId !== "string") throw new Error("В каждой строке нужен unitId (строка).");
           const kg = Number(r.dailyConsumptionKg);
-          if (!Number.isFinite(kg)) throw new Error("Each row needs dailyConsumptionKg (number).");
+          if (!Number.isFinite(kg)) throw new Error("В каждой строке нужен dailyConsumptionKg (число).");
           return { unitId: r.unitId, dailyConsumptionKg: kg };
         });
       } catch (e) {
         setLoading(false);
-        setError(e instanceof Error ? e.message : "Could not parse simulated workbook JSON.");
+        setError(e instanceof Error ? e.message : "Не удалось разобрать JSON имитации таблицы.");
         return;
       }
     }
@@ -85,7 +85,7 @@ export default function DashboardPage() {
       if (!res.ok) {
         const detail = await res.json().catch(() => ({}));
         throw new Error(
-          typeof detail?.error === "string" ? detail.error : `Request failed (${res.status})`
+          typeof detail?.error === "string" ? detail.error : `Ошибка запроса (${res.status})`
         );
       }
       const payload = (await res.json()) as SimulateApiResponse;
@@ -99,7 +99,7 @@ export default function DashboardPage() {
         );
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Simulation failed.");
+      setError(e instanceof Error ? e.message : "Симуляция не выполнена.");
     } finally {
       setLoading(false);
     }
@@ -119,19 +119,19 @@ export default function DashboardPage() {
   return (
     <main className="shell">
       <header className="hero">
-        <h1>Fleet coal twin — inventory runway</h1>
+        <h1>Двойник потребления угля — запас и горизонт</h1>
         <p>
-          Ten boiler houses share a single reserve statement. Adjust daily draws and reserves, then run a
-          linear outlook. Server-side intelligence summarizes risks without exposing credentials to the
-          browser.
+          Десять котельных делят один складской остаток. Настройте суточный расход и запасы, затем запустите
+          линейный прогноз. Расчёт и текстовое сопровождение выполняются на сервере, ключи в браузер не
+          попадают.
         </p>
       </header>
 
       <section className="panel">
-        <h2>Operating posture</h2>
+        <h2>Исходные данные</h2>
         <div className="grid-controls">
           <label className="field">
-            Shared reserves (tons)
+            Общий остаток (т)
             <input
               type="number"
               min={0}
@@ -139,10 +139,10 @@ export default function DashboardPage() {
               value={reserveTons}
               onChange={(e) => setReserveTons(Number(e.target.value))}
             />
-            <span className="hint">Prototype default {DEFAULT_RESERVE_TONS} t.</span>
+            <span className="hint">По умолчанию в прототипе {DEFAULT_RESERVE_TONS} т.</span>
           </label>
           <label className="field">
-            Forecast window (days)
+            Горизонт прогноза (сут.)
             <input
               type="number"
               min={1}
@@ -151,59 +151,59 @@ export default function DashboardPage() {
               value={forecastDays}
               onChange={(e) => setForecastDays(Number(e.target.value))}
             />
-            <span className="hint">Checks whether stock covers steady burn across this horizon.</span>
+            <span className="hint">Проверка, покрывает ли запас равномерный расход на этом горизонте.</span>
           </label>
           <div className="actions">
             <button className="primary" disabled={loading} onClick={() => runSimulation(false)}>
-              {loading ? "Running forecast…" : "Run forecast"}
+              {loading ? "Выполняется прогноз…" : "Запустить прогноз"}
             </button>
             <button className="ghost" type="button" onClick={resetFleet}>
-              Reset defaults
+              Сбросить по умолчанию
             </button>
           </div>
         </div>
 
         <label className="field" style={{ marginTop: "0.85rem" }}>
-          Simulated workbook JSON (optional overlay)
+          JSON имитации таблицы (необязательное наложение)
           <textarea
             value={excelDraft}
             onChange={(e) => setExcelDraft(e.target.value)}
             placeholder={SAMPLE_EXCEL_JSON}
           />
           <span className="hint">
-            Paste rows shaped like{" "}
-            <code>[{"{"}&quot;unitId&quot;:&quot;BH-01&quot;,&quot;dailyConsumptionKg&quot;:12{"}"}]</code>{" "}
-            to mimic spreadsheet ingestion.
+            Вставьте строки вида{" "}
+            <code>[{"{"}&quot;unitId&quot;:&quot;BH-01&quot;,&quot;dailyConsumptionKg&quot;:12{"}"}]</code>,
+            чтобы имитировать загрузку из таблицы.
           </span>
         </label>
         <div className="actions" style={{ marginTop: "0.65rem" }}>
           <button className="ghost" type="button" disabled={loading} onClick={() => runSimulation(true)}>
-            Apply simulated workbook &amp; forecast
+            Применить таблицу и прогноз
           </button>
           <button
             className="ghost"
             type="button"
             onClick={() => setExcelDraft(SAMPLE_EXCEL_JSON)}
           >
-            Load sample rows
+            Подставить пример строк
           </button>
         </div>
 
         {shortage === true && (
           <div className="alert-banner" role="status">
-            <strong>Shortfall alert</strong>
+            <strong>Предупреждение о дефиците</strong>
             <span>
-              Aggregate reserves cannot cover the selected horizon at current linear consumption. Review
-              procurement or temporarily throttle higher-draw houses.
+              Суммарного запаса не хватает на выбранный горизонт при текущем линейном расходе. Проверьте
+              закупки или временно снизьте расход на объектах с высокой долей.
             </span>
           </div>
         )}
         {shortage === false && response && (
           <div className="alert-banner ok" role="status">
-            <strong>Inventory covers horizon</strong>
+            <strong>Запас покрывает горизонт</strong>
             <span>
-              Linear burn stays within stated reserves for the forecast window. Continue monitoring for
-              nonlinear swings once telemetry arrives.
+              При линейном расходе остатка хватает на выбранный период. Продолжайте мониторинг на случай
+              нелинейных колебаний, когда появятся реальные телеметрические данные.
             </span>
           </div>
         )}
@@ -211,35 +211,35 @@ export default function DashboardPage() {
 
       <section className="metrics-row" aria-live="polite">
         <div className="metric">
-          <div className="label">Fleet draw</div>
-          <div className="value">{fleetKg.toFixed(1)} kg/d</div>
-          <div className="sub">{(fleetKg / 1000).toFixed(3)} t/day aggregate</div>
+          <div className="label">Расход парка</div>
+          <div className="value">{fleetKg.toFixed(1)} кг/сут</div>
+          <div className="sub">{(fleetKg / 1000).toFixed(3)} т/сут суммарно</div>
         </div>
         <div className="metric">
-          <div className="label">On-hand inventory</div>
-          <div className="value">{reserveTons.toFixed(2)} t</div>
-          <div className="sub">Shared pool across {BOILER_COUNT} houses</div>
+          <div className="label">Остаток на складе</div>
+          <div className="value">{reserveTons.toFixed(2)} т</div>
+          <div className="sub">Общий пул на {BOILER_COUNT} объектов</div>
         </div>
         <div className="metric">
-          <div className="label">API outlook confidence</div>
+          <div className="label">Уверенность прогноза</div>
           <div className="value">
             {response ? `${Math.round(response.confidence * 100)}%` : "—"}
           </div>
-          <div className="sub">Structured narrative quality signal</div>
+          <div className="sub">Качество структурированного текста</div>
         </div>
       </section>
 
       <section className="split">
         <div className="panel">
-          <h2>Boiler draw schedule</h2>
+          <h2>Расход по котельным</h2>
           <div className="table-wrap">
             <table className="units">
               <thead>
                 <tr>
-                  <th>Unit</th>
-                  <th>Daily coal (kg)</th>
-                  <th>Fleet share</th>
-                  <th>Solo runway (twin lens)</th>
+                  <th>Объект</th>
+                  <th>Суточный расход угля (кг)</th>
+                  <th>Доля в парке</th>
+                  <th>Одиночный горизонт</th>
                 </tr>
               </thead>
               <tbody>
@@ -274,7 +274,7 @@ export default function DashboardPage() {
                         />
                       </td>
                       <td>{(share * 100).toFixed(1)}%</td>
-                      <td>{solo != null && Number.isFinite(solo) ? `${solo.toFixed(1)} d` : "—"}</td>
+                      <td>{solo != null && Number.isFinite(solo) ? `${solo.toFixed(1)} сут.` : "—"}</td>
                     </tr>
                   );
                 })}
@@ -282,17 +282,17 @@ export default function DashboardPage() {
             </table>
           </div>
           <p className="status-text" style={{ marginTop: "0.75rem" }}>
-            Solo runway hypothetically allocates the entire reserve to one house at its current draw for
-            stress visualization; operations still rely on the pooled forecast above.
+            «Одиночный горизонт» — условно весь запас отдан одному объекту при его текущем расходе (для
+            наглядности напряжённости); операционно ориентируйтесь на суммарный прогноз выше.
           </p>
         </div>
 
         <div className="panel">
-          <h2>Server outlook</h2>
+          <h2>Прогноз с сервера</h2>
           {response ? (
             <>
               <div className="confidence-pill">
-                Confidence <b>{Math.round(response.confidence * 100)}%</b>
+                Уверенность <b>{Math.round(response.confidence * 100)}%</b>
               </div>
               <p className="narrative" style={{ marginTop: "0.75rem" }}>
                 {response.explanation}
@@ -304,34 +304,33 @@ export default function DashboardPage() {
               </ul>
               <div className="metrics-row" style={{ marginTop: "0.75rem" }}>
                 <div className="metric">
-                  <div className="label">Aggregate runway</div>
+                  <div className="label">Суммарный запас хода</div>
                   <div className="value">
                     {response.result.aggregateDaysRemaining != null
-                      ? `${response.result.aggregateDaysRemaining.toFixed(1)} d`
+                      ? `${response.result.aggregateDaysRemaining.toFixed(1)} сут.`
                       : "—"}
                   </div>
-                  <div className="sub">Linear pooled burn</div>
+                  <div className="sub">Линейный объединённый расход</div>
                 </div>
                 <div className="metric">
-                  <div className="label">Horizon gap</div>
+                  <div className="label">Разрыв к горизонту</div>
                   <div className="value">
                     {response.result.shortfallTons > 0
-                      ? `-${response.result.shortfallTons.toFixed(2)} t`
-                      : "Balanced"}
+                      ? `−${response.result.shortfallTons.toFixed(2)} т`
+                      : "Без дефицита"}
                   </div>
-                  <div className="sub">Versus {response.result.forecastDays}-day plan</div>
+                  <div className="sub">К плану на {response.result.forecastDays} сут.</div>
                 </div>
               </div>
               {response.result.simulatedExcelSource && (
                 <p className="status-text" style={{ marginTop: "0.65rem" }}>
-                  Latest run merged simulated workbook rows into unit draws before forecasting.
+                  В последнем расчёте строки имитации таблицы подставлены в расход объектов перед прогнозом.
                 </p>
               )}
             </>
           ) : (
             <p className="status-text">
-              Run a forecast to retrieve structured JSON with narrative, confidence, and warnings from the
-              server route.
+              Запустите прогноз, чтобы получить с сервера JSON с текстом, уверенностью и предупреждениями.
             </p>
           )}
           {error && <div className="error-line">{error}</div>}

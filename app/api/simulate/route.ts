@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   try {
     body = (await req.json()) as SimulateRequestBody;
   } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    return NextResponse.json({ error: "Некорректное тело запроса JSON" }, { status: 400 });
   }
 
   const core = runLinearSimulation(body);

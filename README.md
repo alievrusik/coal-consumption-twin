@@ -2,6 +2,8 @@
 
 Interactive Next.js dashboard for ten simulated boiler houses sharing one coal reserve. Deterministic linear physics produce forecasts on the server; an optional foundation-model pass adds structured narrative, confidence, and warnings. Suitable for Vercel previews.
 
+**Интерфейс:** весь пользовательский текст в приложении на русском языке (включая ответы `/api/simulate` при отсутствии модели и при настроенном промпте для русскоязычных операторов).
+
 ## Features
 
 - Per-unit daily consumption (kg), editable grid with fleet share and stress lens.

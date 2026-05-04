@@ -47,21 +47,21 @@ function normalizeAugmentation(
 export function buildFallbackAugmentation(core: SimulationCore): FoundationAugmentation {
   const daysLabel =
     core.aggregateDaysRemaining != null
-      ? `${core.aggregateDaysRemaining.toFixed(1)} days`
-      : "undefined until consumption is positive";
+      ? `${core.aggregateDaysRemaining.toFixed(1)} сут.`
+      : "не определено, пока расход не положительный";
   const horizonOk = !core.reserveInsufficientForForecast;
   const explanation = [
-    `The fleet draws about ${core.totalDailyConsumptionKg.toFixed(1)} kg/day in aggregate (${(core.totalDailyConsumptionKg / 1000).toFixed(3)} t/day).`,
-    `Against ${core.totalReserveTons.toFixed(2)} t on hand, linear pooling implies roughly ${daysLabel} of runway.`,
+    `Парк суммарно потребляет около ${core.totalDailyConsumptionKg.toFixed(1)} кг/сут (${(core.totalDailyConsumptionKg / 1000).toFixed(3)} т/сут).`,
+    `При остатке ${core.totalReserveTons.toFixed(2)} т линейное объединение даёт порядка ${daysLabel} запаса хода.`,
     horizonOk
-      ? `Reserves cover the ${core.forecastDays}-day planning window at current linear burn.`
-      : `Reserves fall short of the ${core.forecastDays}-day window by about ${core.shortfallTons.toFixed(3)} t.`,
+      ? `При текущем линейном расходе запаса хватает на горизонт планирования ${core.forecastDays} сут.`
+      : `Запаса не хватает на ${core.forecastDays} сут. примерно на ${core.shortfallTons.toFixed(3)} т.`,
   ].join(" ");
   const warnings: string[] = [
-    "Forecast uses linear, steady consumption and a single shared inventory pool.",
+    "Прогноз основан на постоянном суточном расходе и одном общем складском пуле.",
     core.simulatedExcelSource
-      ? "Unit draws mirror simulated workbook rows; validate against operational records before acting."
-      : "Dashboard defaults stand in until calibrated feeds or imports are available.",
+      ? "Расход по объектам взят из имитации строк таблицы; сверяйте с оперативными данными перед решениями."
+      : "Значения по умолчанию на панели — иллюстрация до появления калиброванных каналов или импорта.",
   ];
   return {
     explanation,
@@ -91,11 +91,11 @@ export async function augmentSimulationWithFoundation(
   const url = baseRaw.endsWith("/messages") ? baseRaw : `${baseRaw}/v1/messages`;
 
   const userPrompt = [
-    "You support boiler coal inventory briefings.",
+    "You support boiler coal inventory briefings for Russian-speaking operators.",
     "Given CONTEXT_JSON, emit ONLY JSON with keys:",
-    'explanation (two short sentences for operators),',
+    "explanation (two short sentences in Russian for operators),",
     "confidence (number 0-1 reflecting certainty given linear assumptions),",
-    "warnings (array of concise caveats).",
+    "warnings (array of concise caveats; each string in Russian).",
     "Do not cite vendors, models, or training data.",
     "CONTEXT_JSON:",
     JSON.stringify(core),
@@ -120,7 +120,7 @@ export async function augmentSimulationWithFoundation(
     if (!res.ok) {
       return {
         ...fallback,
-        warnings: [...fallback.warnings, `Foundation HTTP ${res.status}; using deterministic narrative.`],
+        warnings: [...fallback.warnings, `Запрос к модели: HTTP ${res.status}; используется локальное описание.`],
       };
     }
 
@@ -133,7 +133,7 @@ export async function augmentSimulationWithFoundation(
   } catch {
     return {
       ...fallback,
-      warnings: [...fallback.warnings, "Foundation request failed; narrative is locally generated."],
+      warnings: [...fallback.warnings, "Запрос к модели не выполнен; текст сформирован локально."],
     };
   }
 }

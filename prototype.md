@@ -25,7 +25,7 @@ Planning / inventory digital twin (linear simulation with narrative augmentation
 
 ## Approach
 
-- Next.js App Router UI tuned to operators (inventory controls + boiler grid + alert ribbon).
+- Next.js App Router UI tuned to operators (inventory controls + boiler grid + alert ribbon); **operator-facing copy is Russian** (browser UI, API error strings when shown, deterministic narrative, and foundation prompt asks for Russian explanation/warnings when the model is enabled).
 - Deterministic simulation in `lib/simulation.ts` for reproducible numbers.
 - Server-only foundation model call (`lib/foundation.ts`) that must return JSON merged into the API envelope; graceful deterministic fallback if credentials are absent or HTTP fails.
 - Simulated spreadsheet path demonstrates future Excel parsing without handling binary files in-browser.
